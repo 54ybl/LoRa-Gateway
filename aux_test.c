@@ -5,8 +5,10 @@
 #define GPIO_EXPORT_PATH "/sys/class/gpio/export"
 
 int gpio_init();
-int mode_set(int mode);
+int mode_set();
 int gpio_set();
+int gpio_read();
+
 
 int main()
 {
@@ -17,13 +19,20 @@ int main()
     gpio_set(28, 1, 1);
     mode_set(0);
 
+    while(1){
+        while(gpio_read(28));
+	printf("checkm8!\n");
+	usleep(5000);
+    }
+    //printf("gpio value:%d\n", gpio_read(28));
+
     return 0;
 }
 
 int mode_set(int mode)
 {
     if (mode < 0 && mode > 3) {
-	printf("Wrong mode\n");
+	printf("Wrong mode!\n");
 	return -1;
     } else if (mode == 0) {
 	gpio_set(29, 0, 0);
@@ -121,3 +130,51 @@ int gpio_set(int gn, int dir, int val)
     close(fd_write);
     return 0;
 }
+
+int gpio_read(int gn)
+{
+    //Set path
+    char gpio_value_path[128];
+    snprintf(gpio_value_path, sizeof(gpio_value_path), "/sys/class/gpio/gpio%d/value", gn);
+    //Read  value
+    char read_value[3];
+    int fd_read = open(gpio_value_path, O_RDONLY);
+    if (fd_read == -1) {
+	char err[128];
+	snprintf(err, sizeof(128), "Error opening gpio%d", gn);
+	perror(err);
+	return -1;
+    }
+
+    //printf("path: %s", gpio_value);
+    if (read(fd_read, read_value, sizeof(read_value)) == -1){
+        perror("Error reading gpio");
+	return -1;
+    }
+    //printf("gpio%d value:%s\n", gn, read_value);
+    close(fd_read);
+    return (atoi(read_value));
+}
+/*
+int gpio_read(int gn)
+{
+    char path[128];
+    char value_str[3];
+    int fd;
+
+    snprintf(path, sizeof(path), "/sys/class/gpio/gpio%d/value", gn);
+    fd = open(path, O_RDONLY);
+    if (fd < 0) {
+        perror("Failed to open gpio value for reading!");
+        return -1;
+    }
+
+    if (read(fd, value_str, 3) < 0) {
+        perror("Failed to read value!");
+        return -1;
+    }
+
+    close(fd);
+    return (atoi(value_str));
+}   //get gpio(n)'s value
+*/
