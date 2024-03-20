@@ -2,7 +2,11 @@
 #include <fcntl.h>
 #include <string.h>
 
-#define GPIO_EXPORT_PATH "/sys/class/gpio/export"
+#define GPIO_EXPORT_PATH	"/sys/class/gpio/export"
+#define MODE_NORMAL	0
+#define MODE_WOR_TX	1
+#define MODE_WOR_RX	2
+#define MODE_CFG	3
 
 int gpio_init();
 int mode_set();
@@ -17,7 +21,7 @@ int main()
     gpio_init(30);
 
     gpio_set(28, 1, 1);
-    mode_set(0);
+    mode_set(MODE_NORMAL);
 
     while(1){
         while(gpio_read(28));
